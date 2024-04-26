@@ -10,7 +10,7 @@ interface Props {
 }
 export const NavBar = ({ mode, changeMode }: Props) => {
     const navigate = useNavigate();
-    const { notification, setSelectedChat, setNotification, user } = useContext(ChatContext)
+    const { notification, setSelectedChat, setNotification,user } = useContext(ChatContext)
     const logoutHandler = () => {
         localStorage.removeItem("userInfo");
         navigate("/");
@@ -57,7 +57,7 @@ export const NavBar = ({ mode, changeMode }: Props) => {
                 <Box>
                     <Menu>
                         <Box sx={{ pl: 900}}>
-                            <ProfileModel user={user} children={undefined} />
+                            {user && <ProfileModel user={user} children={undefined} />}
                         </Box>
                         <MenuDivider />
                     </Menu>
