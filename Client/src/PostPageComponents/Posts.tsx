@@ -26,6 +26,7 @@ export const Posts = () => {
             const { data } = await axios.get("http://localhost:5050/api/posts", config)
             setPosts(data)
         } catch (_err) {
+          // ignore
         }
     }
     useEffect(() => {

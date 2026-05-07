@@ -59,7 +59,7 @@ export const SideDrawer = () => {
     }
   };
 
-  const accessChat = async (userId: String) => {
+  const accessChat = async (userId: string) => {
     try {
       setLoadingChat(true);
       const config: AxiosRequestConfig = {

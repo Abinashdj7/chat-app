@@ -13,8 +13,10 @@ import animationData from "../Animation.json";
 import { GoArrowLeft } from "icons-react/go";
 
 const ENDPOINT = 'http://localhost:5050';
-var socket: any;
-var selectedChatCompare: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let socket: any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let selectedChatCompare: any;
 
 interface Props {
   fetchAgain: boolean;
@@ -133,11 +135,11 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
       setTyping(true);
       socket.emit("typing", selectedChat._id);
     }
-    let lastTypingTime = new Date().getTime();
-    var timeLength = 3000;
+    const lastTypingTime = new Date().getTime();
+    const timeLength = 3000;
     setTimeout(() => {
-      var timeNow = new Date().getTime();
-      var timeDiff = timeNow - lastTypingTime;
+      const timeNow = new Date().getTime();
+      const timeDiff = timeNow - lastTypingTime;
       if (timeDiff >= timeLength && typing) {
         socket.emit("stop typing", selectedChat._id);
         setTyping(false);

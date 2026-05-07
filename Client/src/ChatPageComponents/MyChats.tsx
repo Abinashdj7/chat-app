@@ -33,7 +33,7 @@ export const MyChats = ({ fetchAgain }: { fetchAgain: boolean }) => {
   };
   const chatScroll = (chat: any) => {
     setSelectedChat(chat)
-    let maxY = document.body.scrollHeight
+    const maxY = document.body.scrollHeight
 
     window.scrollTo(0, maxY);
   }

@@ -1,10 +1,10 @@
 ﻿import React, { createContext, useEffect, useState } from "react";
 
 interface UserInfo {
-    id: String;
-    name: String;
-    email: String;
-    pic: String | null;
+    id: string;
+    name: string;
+    email: string;
+    pic: string | null;
 }
 
 export interface ChatContextProps {

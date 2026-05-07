@@ -32,7 +32,8 @@ export const PostInterface = ({ post }: Props) => {
       setLikes((prevLikes) =>
         prevLikes.filter((like: any) => like.userId !== user?._id)
       );
-    } catch (err) {
+    } catch (_err) {
+      // ignore
     }
   };
   const ctx = useContext(ChatContext);
@@ -56,7 +57,8 @@ export const PostInterface = ({ post }: Props) => {
       );
       setComments(data);
       setLoading(false);
-    } catch (err) {
+    } catch (_err) {
+      // ignore
     }
   };
 
@@ -77,7 +79,8 @@ export const PostInterface = ({ post }: Props) => {
         config
       );
       setComments([...comments, data]);
-    } catch (err) {
+    } catch (_err) {
+      // ignore
     }
   };
 
@@ -102,7 +105,8 @@ export const PostInterface = ({ post }: Props) => {
         config
       );
       setLikes((prev) => [...prev, { userId: user?._id, likeId: data._id }]);
-    } catch (err) {
+    } catch (_err) {
+      // ignore
     }
   };
 
@@ -121,7 +125,8 @@ export const PostInterface = ({ post }: Props) => {
       setLikes((prevLikes) =>
         prevLikes.filter((like: any) => like.userId !== user?._id)
       );
-    } catch (err) {
+    } catch (_err) {
+      // ignore
     }
   };
 

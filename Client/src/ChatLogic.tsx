@@ -30,20 +30,13 @@ export const isLatestMessage=(messages:any,i:any,userId:any) => {
     )
 }
 export const isSameSenderMargin=(messages:any,m:any,i:any,userId:any) => {
-    if(i<messages.length-1 && 
+    if(i<messages.length-1 &&
         messages[i+1].sender._id===m.sender._id &&
         messages[i].sender._id!==userId){
             return 33;
         }
-    else if(
-        i<messages.length-1 &&
-        messages[i+1].sender._id===m.sender._id &&
-        messages[i].sender._id!==userId
-    ){
-        return 0;
-    }
     else{
-        return "auton"
+        return "auto"
     }
 }
 export const isSameUser=(messages:any,m:any,i:any)  => {
