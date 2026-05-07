@@ -13,9 +13,7 @@ import animationData from "../Animation.json";
 import { GoArrowLeft } from "icons-react/go";
 
 const ENDPOINT = 'http://localhost:5050';
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let socket: any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let selectedChatCompare: any;
 
 interface Props {

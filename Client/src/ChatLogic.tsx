@@ -3,7 +3,6 @@
 }
 export const getSender=(loggedUser:any,users:any) => {
     if(Array.isArray(users)){
-        //return users[0]?.id===loggedUser?._id?users[1].name:users[0].name
         const otherUser = users.find(user => user.id !== loggedUser?._id);
         return otherUser ? otherUser.name : "Unknown sender";
     }

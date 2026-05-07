@@ -17,7 +17,6 @@ interface Props {
 }
 
 export const PostInterface = ({ post }: Props) => {
-  // Delete like function for unlike
   const deleteLike = async () => {
     try {
       const config: AxiosRequestConfig = {
@@ -33,7 +32,7 @@ export const PostInterface = ({ post }: Props) => {
         prevLikes.filter((like: any) => like.userId !== user?._id)
       );
     } catch (_err) {
-      // ignore
+      void _err;
     }
   };
   const ctx = useContext(ChatContext);
@@ -58,7 +57,7 @@ export const PostInterface = ({ post }: Props) => {
       setComments(data);
       setLoading(false);
     } catch (_err) {
-      // ignore
+      void _err;
     }
   };
 
@@ -80,7 +79,7 @@ export const PostInterface = ({ post }: Props) => {
       );
       setComments([...comments, data]);
     } catch (_err) {
-      // ignore
+      void _err;
     }
   };
 
@@ -106,7 +105,7 @@ export const PostInterface = ({ post }: Props) => {
       );
       setLikes((prev) => [...prev, { userId: user?._id, likeId: data._id }]);
     } catch (_err) {
-      // ignore
+      void _err;
     }
   };
 
@@ -126,7 +125,7 @@ export const PostInterface = ({ post }: Props) => {
         prevLikes.filter((like: any) => like.userId !== user?._id)
       );
     } catch (_err) {
-      // ignore
+      void _err;
     }
   };
 
