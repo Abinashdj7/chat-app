@@ -1,7 +1,7 @@
-import { useContext, useState } from "react";
+﻿import { useState } from "react";
+
 import axios, { AxiosRequestConfig } from "axios";
 import {
-  Avatar,
   Box,
   Button,
   Drawer,
@@ -10,27 +10,20 @@ import {
   DrawerHeader,
   DrawerOverlay,
   Input,
-  Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
   Spinner,
   useDisclosure,
   useToast,
 } from "@chakra-ui/react";
-import { AiFillBulb } from "icons-react/ai";
-import { ChatContext } from "../ChatProvider";
-import { ProfileModel } from "../UserComponents/ProfileModel";
+import { useChatContext } from "../ChatProvider";
+
 import { UserListItem } from "../UserComponents/UserListItem";
-import { useNavigate } from "react-router-dom";
 
 export const SideDrawer = () => {
   const [search, setSearch] = useState("");
   const [searchResult, setSearchResult] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingChat, setLoadingChat] = useState(false);
-  const { user, setSelectedChat, chats, setChats } = useContext(ChatContext);
+  const { user, setSelectedChat, chats, setChats } = useChatContext();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const toast = useToast();
 
@@ -52,7 +45,7 @@ export const SideDrawer = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.get(`http://localhost:5000/api/users?search=${search}`, config);
+      const { data } = await axios.get(`http://localhost:5050/api/users?search=${search}`, config);
       setLoading(false);
       setSearchResult(data);
     } catch (err) {
@@ -75,7 +68,7 @@ export const SideDrawer = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      const { data } = await axios.post("http://localhost:5000/api/chats", { userId }, config);
+      const { data } = await axios.post("http://localhost:5050/api/chats", { userId }, config);
       if (Array.isArray(chats) && !chats.find((c) => c._id === data._id)) {
         setChats([data, ...chats]);
       }
@@ -95,7 +88,7 @@ export const SideDrawer = () => {
 
   return (
     <Box sx={{ position: "sticky", top: 0, zIndex: 6, roundedBottom: "lg" }}>
-      <Box sx={{ display: "flex", flexDirection: "row" ,backgroundImage:"https://img.freepik.com/free-vector/beautiful-decorative-soft-colorful-watercolor-texture-background_1055-14290.jpg?size=626&ext=jpg&ga=GA1.1.1687694167.1711584000&semt=ais" }}>
+      <Box sx={{ display: "flex", flexDirection: "row", backgroundImage: "https://img.freepik.com/free-vector/beautiful-decorative-soft-colorful-watercolor-texture-background_1055-14290.jpg?size=626&ext=jpg&ga=GA1.1.1687694167.1711584000&semt=ais" }}>
         <Box sx={{ pl: "20px", pt: "10px" }}><Button onClick={onOpen} sx={{ backgroundColor: "#FC4445" }}>Search</Button></Box>
       </Box>
       <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
@@ -104,7 +97,7 @@ export const SideDrawer = () => {
           <DrawerHeader sx={{ backgroundColor: "#00f0b5" }}>Search users</DrawerHeader>
           <DrawerBody>
             <Box>
-              <Input type="text" placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} sx={{backgroundColor:"#faf3dd"}}/>
+              <Input type="text" placeholder="Search by name or email" value={search} onChange={(e) => setSearch(e.target.value)} sx={{ backgroundColor: "#faf3dd" }} />
               <Button onClick={handleSearch} sx={{ backgroundColor: "#FC4445" }}>Go</Button>
               {loading ? null : (
                 searchResult?.map((u: any) => (
@@ -119,3 +112,4 @@ export const SideDrawer = () => {
     </Box>
   );
 };
+

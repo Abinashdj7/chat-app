@@ -1,10 +1,10 @@
-import { SingleChat } from "../Messaging/SingleChat"
-interface Props{
-    fetchAgain:Boolean;
-    setFetchAgain:() => Boolean;
+﻿import { SingleChat } from "../Messaging/SingleChat"
+interface Props {
+    fetchAgain: boolean;
+    setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>;
 }
-export const ChatBox=({fetchAgain,setFetchAgain}:Props) => {
-    return(<>
-    <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}></SingleChat>
+export const ChatBox = ({ fetchAgain, setFetchAgain }: Props) => {
+    return (<>
+        <SingleChat fetchAgain={fetchAgain} setFetchAgain={setFetchAgain}></SingleChat>
     </>)
 }

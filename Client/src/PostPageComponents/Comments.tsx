@@ -1,6 +1,4 @@
-import { useContext } from "react";
-import { ChatContext } from "../ChatProvider";
-import ScrollableFeed from "react-scrollable-feed";
+﻿import ScrollableFeed from "react-scrollable-feed";
 import { Box } from "@chakra-ui/react";
 
 interface Props {
@@ -8,7 +6,6 @@ interface Props {
 }
 
 export const Comments = ({ comments }: Props) => {
-  const { user } = useContext(ChatContext);
 
   return (
     <ScrollableFeed>
@@ -31,3 +28,4 @@ export const Comments = ({ comments }: Props) => {
     </ScrollableFeed>
   );
 };
+

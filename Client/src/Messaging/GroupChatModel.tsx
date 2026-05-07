@@ -1,4 +1,4 @@
-import {
+﻿import {
   useDisclosure,
   Button,
   ModalBody,
@@ -14,21 +14,25 @@ import {
   Box,
   Spinner,
 } from "@chakra-ui/react";
-import { useContext, useState } from "react";
-import { ChatContext } from "../ChatProvider";
+import { useState } from "react";
+import { useChatContext } from "../ChatProvider";
 import { UserListItem } from "../UserComponents/UserListItem";
 import { UserBadgeItem } from "../UserComponents/UserBadgeItem";
 import axios, { AxiosRequestConfig } from "axios";
 
-export const GroupChatModel = () => {
+interface GroupChatModelProps {
+  children?: React.ReactNode;
+}
+
+export const GroupChatModel = ({ children }: GroupChatModelProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupChatName, setGroupChatName] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-  const [searchResult, setSearchResult] = useState([]);
+  const [searchResult, setSearchResult] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const toast = useToast();
-  const { user, chats, setChats } = useContext(ChatContext);
+  const { user, chats, setChats } = useChatContext();
 
   const handleSearch = async (query: any) => {
     setSearch(query);
@@ -43,7 +47,7 @@ export const GroupChatModel = () => {
         },
       };
       const { data } = await axios.get(
-        `http://localhost:5000/api/users?search=${search}`,
+        `http://localhost:5050/api/users?search=${search}`,
         config
       );
       setLoading(false);
@@ -82,7 +86,7 @@ export const GroupChatModel = () => {
         },
       };
       const { data } = await axios.post(
-        `http://localhost:5000/api/chats/group`,
+        `http://localhost:5050/api/chats/group`,
         {
           name: groupChatName,
           users: JSON.stringify(selectedUsers.map((u) => u._id)),
@@ -119,7 +123,11 @@ export const GroupChatModel = () => {
 
   return (
     <>
-      <Button onClick={onOpen} style={{backgroundColor:"#00f0b5"}}>Create Chat</Button>
+      {children ? (
+        <div onClick={onOpen}>{children}</div>
+      ) : (
+        <Button onClick={onOpen} style={{ backgroundColor: "#00f0b5" }}>Create Chat</Button>
+      )}
 
       <Modal onClose={onClose} isOpen={isOpen} isCentered>
         <ModalOverlay />
@@ -143,8 +151,8 @@ export const GroupChatModel = () => {
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </FormControl>
-            <Box w="100%" d="flex" flexWrap="wrap">
-              {selectedUsers.map((u) => (
+            <Box w="100%" display="flex" flexWrap="wrap">
+              {selectedUsers.map((u: any) => (
                 <UserBadgeItem
                   key={u._id}
                   user={u}
@@ -175,3 +183,4 @@ export const GroupChatModel = () => {
     </>
   );
 };
+

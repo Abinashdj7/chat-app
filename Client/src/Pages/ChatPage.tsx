@@ -1,11 +1,11 @@
-import { useContext, useState } from "react";
-import { ChatContext } from "../ChatProvider";
+﻿import { useState } from "react";
+import { useChatContext } from "../ChatProvider";
 import { SideDrawer } from "../ChatPageComponents/SideDrawer";
 import { ChatBox } from "../ChatPageComponents/ChatBox";
 import { MyChats } from "../ChatPageComponents/MyChats";
 
 export const ChatPage = () => {
-  const { user } = useContext(ChatContext);
+  const { user } = useChatContext();
   const [fetchAgain, setFetchAgain] = useState(false);
 
   return (
@@ -16,3 +16,4 @@ export const ChatPage = () => {
     </div>
   );
 };
+

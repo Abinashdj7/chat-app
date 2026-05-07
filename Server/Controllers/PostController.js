@@ -10,7 +10,6 @@ const getPost=asyncHandler(async(req,res) => {
 })
 const makePost=asyncHandler(async(req,res) => {
  
-    console.log(req.body)
     try{
         const post=await Post.create({
             title:req.body.title,

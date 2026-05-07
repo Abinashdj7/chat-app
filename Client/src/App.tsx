@@ -1,4 +1,4 @@
-import {BrowserRouter as Router,Routes,Route} from "react-router-dom"
+﻿import {BrowserRouter as Router,Routes,Route} from "react-router-dom"
 import { AuthPage } from "./Pages/AuthPage"
 import { HomePage } from "./Pages/HomePage"
 import { ChakraProvider } from "@chakra-ui/react"

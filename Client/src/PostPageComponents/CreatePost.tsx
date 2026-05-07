@@ -1,11 +1,10 @@
-import { Box, FormControl, Input, Button, useToast, Textarea } from "@chakra-ui/react";
-import { useState, useContext } from "react";
-import { ChatContext } from "../ChatProvider";
+﻿import { Box, FormControl, Input, Button, useToast, Textarea } from "@chakra-ui/react";
+import { useState } from "react";
+import { useChatContext } from "../ChatProvider";
 import axios, { AxiosRequestConfig } from "axios";
-import { Posts } from "./Posts";
 
 export const CreatePost = () => {
-  const { user, posts, setPosts } = useContext(ChatContext);
+  const { user, posts, setPosts } = useChatContext();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
@@ -14,7 +13,7 @@ export const CreatePost = () => {
 
   const postDetails = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLoading(true);
-    const pics = e.target.files[0];
+    const pics = e.target.files?.[0];
     if (!pics) {
       toast({
         title: "Please select an image",
@@ -37,10 +36,9 @@ export const CreatePost = () => {
         .then((res) => res.json())
         .then((data) => {
           setImage(data.url.toString());
-          console.log(data.url.toString());
           setLoading(false);
         })
-        .catch((err) => {
+        .catch(() => {
           toast({
             title: "Error occurred (pic)",
             isClosable: true,
@@ -77,9 +75,8 @@ export const CreatePost = () => {
           Authorization: `Bearer ${user.token}`,
         },
       };
-      console.log("Success before axios");
       const { data } = await axios.post(
-        "http://localhost:5000/api/posts",
+        "http://localhost:5050/api/posts",
         {
           title: title,
           description: description,
@@ -89,10 +86,8 @@ export const CreatePost = () => {
         },
         config
       );
-      console.log("Success after axios");
       const updatedPosts = Array.isArray(posts) ? posts : [];
       setPosts([data, ...updatedPosts]);
-      console.log("Success after setting state");
       window.location.reload();
     } catch (err) {
       toast({
@@ -102,7 +97,6 @@ export const CreatePost = () => {
         isClosable: true,
         position: "bottom",
       });
-      console.log(err);
     }
   };
 
@@ -131,3 +125,4 @@ export const CreatePost = () => {
     </Box>
   );
 };
+

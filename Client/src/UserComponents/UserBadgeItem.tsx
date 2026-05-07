@@ -1,4 +1,4 @@
-import { Badge,CloseButton } from "@chakra-ui/react";
+﻿import { Badge,CloseButton } from "@chakra-ui/react";
 interface Props{
     user:any;
     handleFunction:() => any;

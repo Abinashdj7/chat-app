@@ -1,4 +1,4 @@
-import { SignUp } from "../Authentication/SignUp";
+﻿import { SignUp } from "../Authentication/SignUp";
 import { Login } from "../Authentication/Login";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -14,9 +14,12 @@ export const AuthPage = () => {
   };
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("userInfo"));
-    if (user) {
-      navigate("/chats");
+    const userInfo = localStorage.getItem("userInfo");
+    if (userInfo) {
+      const user = JSON.parse(userInfo);
+      if (user) {
+        navigate("/chats");
+      }
     }
   }, [navigate]);
 
@@ -31,3 +34,4 @@ export const AuthPage = () => {
     </Center>
   );
 };
+

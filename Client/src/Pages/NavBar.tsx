@@ -1,7 +1,6 @@
-import { Box, Button, Menu, MenuButton, MenuDivider, MenuItem, MenuList, useDisclosure } from "@chakra-ui/react";
-import { useContext } from "react";
+﻿import { Box, Button, Menu, MenuButton, MenuDivider, MenuItem, MenuList } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { ChatContext } from "../ChatProvider";
+import { useChatContext } from "../ChatProvider";
 import { ProfileModel } from "../UserComponents/ProfileModel";
 
 interface Props {
@@ -10,7 +9,7 @@ interface Props {
 }
 export const NavBar = ({ mode, changeMode }: Props) => {
     const navigate = useNavigate();
-    const { notification, setSelectedChat, setNotification,user } = useContext(ChatContext)
+    const { notification, setSelectedChat, setNotification, user } = useChatContext()
     const logoutHandler = () => {
         localStorage.removeItem("userInfo");
         navigate("/");
@@ -41,10 +40,10 @@ export const NavBar = ({ mode, changeMode }: Props) => {
                     <MenuButton as={Button} variant="solid" sx={{ backgroundColor: "#FC4445" }}>Notification</MenuButton>
                     <MenuList>
                         {notification?.length ? (
-                            notification.map((n) => (
+                            notification.map((n: any) => (
                                 <MenuItem key={n._id} onClick={() => {
                                     setSelectedChat(n.chat);
-                                    setNotification(notification.filter((notif) => notif !== n));
+                                    setNotification(notification.filter((notif: any) => notif !== n));
                                 }}>
                                     {n.chat.isGroupChat ? `New message in ${n.chat.chatName}` : `New message from ${"GetSender"}`}
                                 </MenuItem>
@@ -56,7 +55,7 @@ export const NavBar = ({ mode, changeMode }: Props) => {
                 </Menu></Box>
                 <Box>
                     <Menu>
-                        <Box sx={{ pl: 900}}>
+                        <Box sx={{ pl: 900 }}>
                             {user && <ProfileModel user={user} children={undefined} />}
                         </Box>
                         <MenuDivider />
@@ -66,3 +65,4 @@ export const NavBar = ({ mode, changeMode }: Props) => {
         </header>
     </>)
 }
+

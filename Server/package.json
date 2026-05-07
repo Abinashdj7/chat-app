@@ -1,4 +1,12 @@
 {
+  "scripts": {
+    "start": "node App.js",
+    "test": "jest"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.js"]
+  },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "colors": "^1.4.0",
@@ -9,5 +17,9 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.0.3",
     "socket.io": "^4.7.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4"
   }
 }

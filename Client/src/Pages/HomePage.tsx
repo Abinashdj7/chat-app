@@ -1,9 +1,8 @@
-import { useContext, useState } from "react";
+﻿import { useState } from "react";
 import { ChatPage } from "./ChatPage";
 import { PostPage } from "./PostPage";
 import { NavBar } from "./NavBar";
 import { Footer } from "./Footer";
-import { ChatContext } from "../ChatProvider";
 
 export const HomePage = () => {
   const [mode, setMode] = useState(false);
@@ -13,12 +12,13 @@ export const HomePage = () => {
   };
   return (
     <div>
-      
-      <NavBar mode={mode} changeMode={changeMode}/>
+
+      <NavBar mode={mode} changeMode={changeMode} />
       <div style={{ minHeight: "100vh" }}>
         {mode ? <PostPage /> : <ChatPage />}
       </div>
-      <Footer/>
+      <Footer />
     </div>
   );
 };
+

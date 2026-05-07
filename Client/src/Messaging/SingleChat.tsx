@@ -1,9 +1,10 @@
-import { useContext, useEffect, useState } from "react";
-import { ChatContext } from "../ChatProvider";
-import { getSender, getSenderFull } from "../ChatLogic";
+﻿import { useEffect, useState } from "react";
+import { useChatContext } from "../ChatProvider";
+
+import { getSenderFull } from "../ChatLogic";
 import { ProfileModel } from "../UserComponents/ProfileModel";
 import { UpdateGroupChatModel } from "./UpdateGroupChatModel";
-import { Spinner, useToast, Text, IconButton, Box, FormControl, Input, Button, Textarea } from "@chakra-ui/react";
+import { Spinner, useToast, Text, IconButton, Box, FormControl, Button, Textarea } from "@chakra-ui/react";
 import axios, { AxiosRequestConfig } from "axios";
 import { ScrollableChat } from "./ScrollableChat";
 import io from "socket.io-client";
@@ -11,13 +12,13 @@ import Lottie from "lottie-react";
 import animationData from "../Animation.json";
 import { GoArrowLeft } from "icons-react/go";
 
-const ENDPOINT = 'http://localhost:5000';
+const ENDPOINT = 'http://localhost:5050';
 var socket: any;
 var selectedChatCompare: any;
 
 interface Props {
   fetchAgain: boolean;
-  setFetchAgain: (f: boolean) => boolean;
+  setFetchAgain: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
@@ -25,7 +26,8 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  const { user, selectedChat, setSelectedChat, notification, setNotification } = useContext(ChatContext);
+  const { user, selectedChat, setSelectedChat, notification, setNotification } = useChatContext();
+
   const [socketConnected, setSocketConnected] = useState(false);
   const [typing, setTyping] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -50,7 +52,7 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
         }
       };
       setLoading(true);
-      const { data } = await axios.get(`http://localhost:5000/api/messages/${selectedChat._id}`, config);
+      const { data } = await axios.get(`http://localhost:5050/api/messages/${selectedChat._id}`, config);
       setMessages(data);
       setLoading(false);
       socket.emit("join chat", selectedChat._id);
@@ -77,7 +79,7 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
         }
       };
       setNewMessage("");
-      const { data } = await axios.post("http://localhost:5000/api/messages", {
+      const { data } = await axios.post("http://localhost:5050/api/messages", {
         content: newMessage,
         chatId: selectedChat
       }, config);
@@ -168,9 +170,7 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
               (!selectedChat.isGroupChat ? (
                 <>
                   {selectedChat.users[1].name === user.name ? selectedChat.users[0].name : selectedChat.users[1].name}
-                  <ProfileModel
-                    user={getSenderFull(user, selectedChat.users)}
-                  />
+                  <ProfileModel user={getSenderFull(user, selectedChat.users)} />
                 </>
               ) : (
                 <>
@@ -216,8 +216,9 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
               {isTyping ? (
                 <div>
                   <Lottie
-                    options={defaultOptions}
-                    width={70}
+                    animationData={defaultOptions.animationData}
+                    loop={defaultOptions.loop}
+                    autoplay={defaultOptions.autoplay}
                     style={{ marginBottom: 15, marginLeft: 0 }}
                   />
                 </div>
@@ -231,16 +232,17 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
                 backgroundColor={"#c8e9a0"}
                 onChange={typingHandler}
               />
-              <div style={{marginTop:"5px"}}>
-              <Button onClick={sendMessage} backgroundColor={"#FC4445"}>Send</Button>
+              <div style={{ marginTop: "5px" }}>
+                <Button onClick={sendMessage} backgroundColor={"#FC4445"}>Send</Button>
               </div>
             </FormControl>
           </Box>
         </>
       ) : (
-        <Box sx={{padding:10,backgroundImage:"https://img.freepik.com/free-vector/beautiful-decorative-soft-colorful-watercolor-texture-background_1055-14290.jpg?size=626&ext=jpg&ga=GA1.1.1687694167.1711584000&semt=ais"}}>
+        <Box sx={{ padding: 10, backgroundImage: "https://img.freepik.com/free-vector/beautiful-decorative-soft-colorful-watercolor-texture-background_1055-14290.jpg?size=626&ext=jpg&ga=GA1.1.1687694167.1711584000&semt=ais" }}>
         </Box>
       )}
     </>
   );
 };
+

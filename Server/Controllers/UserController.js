@@ -5,7 +5,6 @@ const allUsers = asyncHandler(async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ error: "User not authenticated" })
     }
-    console.log(req.user)
     const keyword = req.query.search ? {
         $or: [
             { name: { $regex: req.query.search, $options: 'i' } },

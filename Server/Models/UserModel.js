@@ -16,7 +16,6 @@ const UserSchema=new mongoose.Schema({
     },
     pic:{
         type:String,
-        required:true
     },
     isAdmin:{
         type:Boolean,
@@ -30,7 +29,7 @@ UserSchema.methods.matchPassword=async function(enteredPassword){
     return await bcrypt.compare(enteredPassword,this.password)
 }
 UserSchema.pre('save',async function(next){
-    if(!this.isModified){
+    if(!this.isModified('password')){
         next()
     }
     const salt=await bcrypt.genSalt(10)

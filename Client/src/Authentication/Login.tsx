@@ -1,19 +1,29 @@
-import { useNavigate } from "react-router-dom"
-import { Button, Input, InputRightElement, FormControl, FormLabel, InputGroup, useToast, VStack } from "@chakra-ui/react"
-import axios from "axios"
-import { AxiosRequestConfig } from "axios"
-import { useState } from "react"
-import { useContext } from "react"
-import { ChatContext } from "../ChatProvider"
+﻿import { useNavigate } from "react-router-dom";
+import {
+    Button,
+    Input,
+    InputRightElement,
+    FormControl,
+    FormLabel,
+    InputGroup,
+    useToast,
+    VStack,
+} from "@chakra-ui/react";
+import axios from "axios";
+import { AxiosRequestConfig } from "axios";
+import { useState } from "react";
+
+import { useChatContext } from "../ChatProvider";
 
 export const Login = () => {
-    const [show,setShow]=useState(false)
-    const handleClick=() => setShow(!show)
+    const [show, setShow] = useState(false)
+    const handleClick = () => setShow(!show)
     const [loading, setLoading] = useState(false)
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const Navigate = useNavigate()
-    const { setUser } = useContext(ChatContext)
+    const { setUser } = useChatContext()
+
     const toast = useToast()
     const handleSubmit = async () => {
         setLoading(true)
@@ -34,7 +44,7 @@ export const Login = () => {
                     "Content-Type": "application/json"
                 }
             }
-            const { data } = await axios.post("http://localhost:5000/api/users/login", { email, password }, config)
+            const { data } = await axios.post("http://localhost:5050/api/users/login", { email, password }, config)
             toast({
                 title: "Registration",
                 status: "success",

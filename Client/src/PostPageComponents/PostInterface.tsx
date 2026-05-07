@@ -1,10 +1,9 @@
-import { useContext, useEffect, useState } from "react";
+﻿import { useContext, useEffect, useState } from "react";
 import axios, { AxiosRequestConfig } from "axios";
 import {
   Box,
   Button,
   FormControl,
-  Input,
   Spinner,
   Text,
   Textarea,
@@ -18,16 +17,30 @@ interface Props {
 }
 
 export const PostInterface = ({ post }: Props) => {
-  const { user } = useContext(ChatContext);
-  const [likes, setLikes] = useState([]);
-  const [comments, setComments] = useState([]);
+  // Delete like function for unlike
+  const deleteLike = async () => {
+    try {
+      const config: AxiosRequestConfig = {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+      await axios.delete(
+        `http://localhost:5050/api/likes/${post._id}/${user._id}`,
+        config
+      );
+      setLikes((prevLikes) =>
+        prevLikes.filter((like: any) => like.userId !== user?._id)
+      );
+    } catch (err) {
+    }
+  };
+  const ctx = useContext(ChatContext);
+  const user = ctx?.user;
+  const [likes, setLikes] = useState<any[]>([]);
+  const [comments, setComments] = useState<any[]>([]);
   const [newComment, setNewComment] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    getComments();
-    getLike();
-  }, []);
 
   const getComments = async () => {
     try {
@@ -38,13 +51,12 @@ export const PostInterface = ({ post }: Props) => {
       };
       setLoading(true);
       const { data } = await axios.get(
-        `http://localhost:5000/api/comments/${post._id}`,
+        `http://localhost:5050/api/comments/${post._id}`,
         config
       );
       setComments(data);
       setLoading(false);
     } catch (err) {
-      console.log(err);
     }
   };
 
@@ -57,7 +69,7 @@ export const PostInterface = ({ post }: Props) => {
       };
       setNewComment("");
       const { data } = await axios.post(
-        "http://localhost:5000/api/comments",
+        "http://localhost:5050/api/comments",
         {
           content: newComment,
           postId: post._id,
@@ -66,9 +78,13 @@ export const PostInterface = ({ post }: Props) => {
       );
       setComments([...comments, data]);
     } catch (err) {
-      console.log(err);
     }
   };
+
+  useEffect(() => {
+    getComments();
+    getLike();
+  }, []);
 
   const makeLike = async () => {
     try {
@@ -78,7 +94,7 @@ export const PostInterface = ({ post }: Props) => {
         },
       };
       const { data } = await axios.post(
-        "http://localhost:5000/api/likes",
+        "http://localhost:5050/api/likes",
         {
           postId: post._id,
           userId: user._id,
@@ -87,30 +103,11 @@ export const PostInterface = ({ post }: Props) => {
       );
       setLikes((prev) => [...prev, { userId: user?._id, likeId: data._id }]);
     } catch (err) {
-      console.log(err);
     }
   };
 
   const getLike = async () => {
-    try {
-      const config: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-      const { data } = await axios.get(
-        `http://localhost:5000/api/likes/${post._id}`,
-        config
-      );
-      if (Array.isArray(data)) {
-        setLikes(data.map((d) => ({ userId: d.userId, likeId: d._id })));
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
 
-  const deleteLike = async () => {
     try {
       const config: AxiosRequestConfig = {
         headers: {
@@ -118,28 +115,27 @@ export const PostInterface = ({ post }: Props) => {
         },
       };
       await axios.delete(
-        `http://localhost:5000/api/likes/${post._id}/${user._id}`,
+        `http://localhost:5050/api/likes/${post._id}/${user._id}`,
         config
       );
       setLikes((prevLikes) =>
         prevLikes.filter((like: any) => like.userId !== user?._id)
       );
     } catch (err) {
-      console.log(err);
     }
   };
-  
+
 
   const hasLiked =
     Array.isArray(likes) && likes?.find((like: any) => like.userId === user?._id);
 
   return (
-    <Box borderWidth="1px" borderRadius="lg" p="4" background ="#c8d5b9" mb={9}>
-      <Box sx={{display:"inline-block"}} pl={4} pr={4} pt={2} pb={2} fontSize="xl" fontWeight="bold" mb="2" backgroundColor="#68b0ab" rounded={"md"}>
+    <Box borderWidth="1px" borderRadius="lg" p="4" background="#c8d5b9" mb={9}>
+      <Box sx={{ display: "inline-block" }} pl={4} pr={4} pt={2} pb={2} fontSize="xl" fontWeight="bold" mb="2" backgroundColor="#68b0ab" rounded={"md"}>
         {post.title}
       </Box>
       <Text>{post.description}</Text>
-      {post.image && <Box mt="4"><img src={post.image} alt={post.title} height="200" width="200"/></Box>}
+      {post.image && <Box mt="4"><img src={post.image} alt={post.title} height="200" width="200" /></Box>}
       <Text mt="2" fontWeight="bold">
         {post.username}
       </Text>
@@ -168,3 +164,4 @@ export const PostInterface = ({ post }: Props) => {
     </Box>
   );
 };
+

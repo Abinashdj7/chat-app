@@ -1,4 +1,4 @@
-import { Box, Grid } from "@chakra-ui/react"
+﻿import { Box, Grid } from "@chakra-ui/react"
 import { useNavigate } from "react-router-dom"
 
 export const Footer=() => {
