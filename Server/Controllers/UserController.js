@@ -1,14 +1,15 @@
 const asyncHandler = require('express-async-handler')
 const { User } = require('../Models/UserModel')
 const generateToken = require('../MiddleWare/GenerateToken')
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const allUsers = asyncHandler(async (req, res) => {
     if (!req.user) {
         return res.status(401).json({ error: "User not authenticated" })
     }
     const keyword = req.query.search ? {
         $or: [
-            { name: { $regex: req.query.search, $options: 'i' } },
-            { email: { $regex: req.query.search, $options: 'i' } }
+            { name: { $regex: escapeRegex(req.query.search), $options: 'i' } },
+            { email: { $regex: escapeRegex(req.query.search), $options: 'i' } }
         ]
     } : {}
     const users = await User.find(keyword).find({
