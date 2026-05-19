@@ -1,0 +1,29 @@
+[
+  {
+    "_id": "chat001",
+    "chatName": "sender",
+    "isGroupChat": false,
+    "users": [
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d1", "name": "Test User", "email": "test@chatapp.dev", "pic": null },
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d2", "name": "Alice", "email": "alice@chatapp.dev", "pic": null }
+    ],
+    "latestMessage": {
+      "_id": "msg001",
+      "content": "Hey there!",
+      "sender": { "_id": "64f1a2b3c4d5e6f7a8b9c0d2", "name": "Alice", "pic": null, "email": "alice@chatapp.dev" }
+    },
+    "groupAdmin": null
+  },
+  {
+    "_id": "chat002",
+    "chatName": "Dev Team",
+    "isGroupChat": true,
+    "users": [
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d1", "name": "Test User", "email": "test@chatapp.dev", "pic": null },
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d2", "name": "Alice", "email": "alice@chatapp.dev", "pic": null },
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d3", "name": "Bob", "email": "bob@chatapp.dev", "pic": null }
+    ],
+    "latestMessage": null,
+    "groupAdmin": { "_id": "64f1a2b3c4d5e6f7a8b9c0d1", "name": "Test User", "pic": null, "email": "test@chatapp.dev" }
+  }
+]

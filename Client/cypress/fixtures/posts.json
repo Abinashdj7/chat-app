@@ -1,0 +1,22 @@
+[
+  {
+    "_id": "post001",
+    "title": "Hello World",
+    "description": "My first post on this platform!",
+    "image": "",
+    "username": "Test User",
+    "userId": "64f1a2b3c4d5e6f7a8b9c0d1",
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "_id": "post002",
+    "title": "Building a Chat App",
+    "description": "Here is what I learned building a real-time chat application with Socket.IO.",
+    "image": "",
+    "username": "Alice",
+    "userId": "64f1a2b3c4d5e6f7a8b9c0d2",
+    "createdAt": "2024-01-02T00:00:00.000Z",
+    "updatedAt": "2024-01-02T00:00:00.000Z"
+  }
+]

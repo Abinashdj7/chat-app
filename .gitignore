@@ -20,6 +20,10 @@ server_build.log
 # Build output text files
 Client/build_output*.txt
 
+# Cypress artefacts
+Client/cypress/videos/
+Client/cypress/screenshots/
+
 # OS
 .DS_Store
 Thumbs.db
