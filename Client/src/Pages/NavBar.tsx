@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChatContext } from "../ChatProvider";
 import { ProfileModel } from "../UserComponents/ProfileModel";
 import { getSender } from "../ChatLogic";
+import type { Message } from "../types";
 
 interface Props {
   mode: boolean;
@@ -33,13 +34,13 @@ export const NavBar = ({ mode, changeMode }: Props) => {
           <Menu>
             <MenuButton as={Button} variant="solid" sx={{ backgroundColor: "#FC4445" }}>Notification</MenuButton>
             <MenuList>
-              {notification?.length ? (
-                notification.map((n: any) => (
+              {notification.length ? (
+                notification.map((n: Message) => (
                   <MenuItem
                     key={n._id}
                     onClick={() => {
                       setSelectedChat(n.chat);
-                      setNotification(notification.filter((notif: any) => notif !== n));
+                      setNotification(notification.filter((notif) => notif !== n));
                     }}
                   >
                     {n.chat.isGroupChat

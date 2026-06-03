@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import type { Socket } from "socket.io-client";
+import type { User } from "../types";
 
 const ENDPOINT = import.meta.env.VITE_API_URL ?? "http://localhost:5050";
 
-export function useSocket(user: any) {
+export function useSocket(user: User | null) {
   const socketRef = useRef<Socket | null>(null);
   const [connected, setConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
@@ -21,6 +22,8 @@ export function useSocket(user: any) {
       socket.disconnect();
       socketRef.current = null;
     };
+    // intentionally keyed on user._id only — reconnect only when identity changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user?._id]);
 
   return { socketRef, connected, isTyping };

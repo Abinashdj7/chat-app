@@ -1,3 +1,14 @@
+export {}
+
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface Chainable {
+      loginByLocalStorage(user: object): Chainable
+    }
+  }
+}
+
 Cypress.Commands.add('loginByLocalStorage', (user: object) => {
   cy.visit('/', {
     onBeforeLoad: (win) => {
@@ -5,11 +16,3 @@ Cypress.Commands.add('loginByLocalStorage', (user: object) => {
     },
   })
 })
-
-declare global {
-  namespace Cypress {
-    interface Chainable {
-      loginByLocalStorage(user: object): Chainable<void>
-    }
-  }
-}

@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { likeApi, commentApi } from "../services/api";
+import type { Like, Comment } from "../types";
 
 export function usePostActions(postId: string, userId: string) {
-  const [likes, setLikes] = useState<any[]>([]);
-  const [comments, setComments] = useState<any[]>([]);
+  const [likes, setLikes] = useState<Like[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -14,8 +15,8 @@ export function usePostActions(postId: string, userId: string) {
           likeApi.getLikes(postId),
           commentApi.getComments(postId),
         ]);
-        setLikes(likeRes.data);
-        setComments(commentRes.data);
+        setLikes(likeRes.data as Like[]);
+        setComments(commentRes.data as Comment[]);
       } finally {
         setLoading(false);
       }
@@ -25,7 +26,7 @@ export function usePostActions(postId: string, userId: string) {
 
   const addLike = async () => {
     const { data } = await likeApi.addLike(postId, userId);
-    setLikes((prev) => [...prev, { userId, likeId: data._id }]);
+    setLikes((prev) => [...prev, { postId, userId, likeId: (data as Like)._id }]);
   };
 
   const removeLike = async () => {
@@ -35,7 +36,7 @@ export function usePostActions(postId: string, userId: string) {
 
   const addComment = async (content: string) => {
     const { data } = await commentApi.makeComment(content, postId);
-    setComments((prev) => [...prev, data]);
+    setComments((prev) => [...prev, data as Comment]);
   };
 
   const hasLiked = likes.some((l) => l.userId === userId);

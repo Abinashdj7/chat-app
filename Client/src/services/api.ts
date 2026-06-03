@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { User } from "../types";
 
 const BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:5050";
 
@@ -7,7 +8,7 @@ const api = axios.create({ baseURL: BASE_URL });
 api.interceptors.request.use((config) => {
   const stored = localStorage.getItem("userInfo");
   if (stored) {
-    const { token } = JSON.parse(stored);
+    const { token } = JSON.parse(stored) as { token?: string };
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -19,7 +20,7 @@ export const authApi = {
   register: (name: string, email: string, password: string, pic: string | null) =>
     api.post("/api/users", { name, email, password, pic }),
   searchUsers: (query: string) =>
-    api.get<any[]>(`/api/users?search=${encodeURIComponent(query)}`),
+    api.get<User[]>(`/api/users?search=${encodeURIComponent(query)}`),
 };
 
 export const chatApi = {

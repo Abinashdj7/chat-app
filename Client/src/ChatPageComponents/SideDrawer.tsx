@@ -1,21 +1,13 @@
 import { useState } from "react";
 import {
-  Box,
-  Button,
-  Drawer,
-  DrawerBody,
-  DrawerContent,
-  DrawerHeader,
-  DrawerOverlay,
-  Input,
-  Spinner,
-  useDisclosure,
-  useToast,
+  Box, Button, Drawer, DrawerBody, DrawerContent, DrawerHeader,
+  DrawerOverlay, Input, Spinner, useDisclosure, useToast,
 } from "@chakra-ui/react";
 import { useChatContext } from "../ChatProvider";
 import { UserListItem } from "../UserComponents/UserListItem";
 import { useUserSearch } from "../hooks/useUserSearch";
 import { chatApi } from "../services/api";
+import type { Chat } from "../types";
 
 export const SideDrawer = () => {
   const [search, setSearch] = useState("");
@@ -38,10 +30,11 @@ export const SideDrawer = () => {
     try {
       setLoadingChat(true);
       const { data } = await chatApi.accessChat(userId);
-      if (Array.isArray(chats) && !chats.find((c) => c._id === data._id)) {
-        setChats([data, ...chats]);
+      const chat = data as Chat;
+      if (!chats.find((c) => c._id === chat._id)) {
+        setChats([chat, ...chats]);
       }
-      setSelectedChat(data);
+      setSelectedChat(chat);
       onClose();
     } catch {
       toast({ title: "Error fetching chat", status: "error", duration: 5000, isClosable: true, position: "bottom" });
@@ -63,18 +56,13 @@ export const SideDrawer = () => {
           <DrawerHeader sx={{ backgroundColor: "#00f0b5" }}>Search users</DrawerHeader>
           <DrawerBody>
             <Box>
-              <Input
-                type="text"
-                placeholder="Search by name or email"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                sx={{ backgroundColor: "#faf3dd" }}
-              />
+              <Input type="text" placeholder="Search by name or email" value={search}
+                onChange={(e) => setSearch(e.target.value)} sx={{ backgroundColor: "#faf3dd" }} />
               <Button onClick={handleSearch} sx={{ backgroundColor: "#FC4445" }}>Go</Button>
               {loading ? (
                 <Spinner ml="auto" display="flex" />
               ) : (
-                searchResult.map((u: any) => (
+                searchResult.map((u) => (
                   <UserListItem key={u._id} user={u} handleFunction={() => accessChat(u._id)} />
                 ))
               )}

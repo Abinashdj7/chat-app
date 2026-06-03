@@ -1,18 +1,7 @@
 import {
-  useDisclosure,
-  Button,
-  ModalBody,
-  ModalOverlay,
-  ModalCloseButton,
-  ModalContent,
-  Modal,
-  ModalHeader,
-  ModalFooter,
-  useToast,
-  FormControl,
-  Input,
-  Box,
-  Spinner,
+  useDisclosure, Button, ModalBody, ModalOverlay, ModalCloseButton,
+  ModalContent, Modal, ModalHeader, ModalFooter, useToast,
+  FormControl, Input, Box, Spinner,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useChatContext } from "../ChatProvider";
@@ -20,6 +9,7 @@ import { UserListItem } from "../UserComponents/UserListItem";
 import { UserBadgeItem } from "../UserComponents/UserBadgeItem";
 import { useUserSearch } from "../hooks/useUserSearch";
 import { chatApi } from "../services/api";
+import type { User, Chat } from "../types";
 
 interface GroupChatModelProps {
   children?: React.ReactNode;
@@ -28,13 +18,13 @@ interface GroupChatModelProps {
 export const GroupChatModel = ({ children }: GroupChatModelProps) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [groupChatName, setGroupChatName] = useState("");
-  const [selectedUsers, setSelectedUsers] = useState<any[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
   const toast = useToast();
   const { chats, setChats } = useChatContext();
   const { searchResult, loading, searchUsers } = useUserSearch();
 
-  const handleAddUser = (userToAdd: any) => {
+  const handleAddUser = (userToAdd: User) => {
     if (selectedUsers.some((u) => u._id === userToAdd._id)) {
       toast({ title: "User already added", status: "warning", duration: 5000, isClosable: true, position: "bottom" });
       return;
@@ -42,7 +32,7 @@ export const GroupChatModel = ({ children }: GroupChatModelProps) => {
     setSelectedUsers((prev) => [...prev, userToAdd]);
   };
 
-  const handleRemoveUser = (userToRemove: any) => {
+  const handleRemoveUser = (userToRemove: User) => {
     setSelectedUsers((prev) => prev.filter((u) => u._id !== userToRemove._id));
   };
 
@@ -52,11 +42,8 @@ export const GroupChatModel = ({ children }: GroupChatModelProps) => {
       return;
     }
     try {
-      const { data } = await chatApi.createGroupChat(
-        groupChatName,
-        selectedUsers.map((u) => u._id)
-      );
-      setChats([data, ...chats]);
+      const { data } = await chatApi.createGroupChat(groupChatName, selectedUsers.map((u) => u._id));
+      setChats([data as Chat, ...chats]);
       onClose();
       toast({ title: "Group chat created", status: "success", duration: 5000, isClosable: true, position: "bottom" });
     } catch {
@@ -66,9 +53,7 @@ export const GroupChatModel = ({ children }: GroupChatModelProps) => {
 
   return (
     <>
-      {children ? (
-        <div onClick={onOpen}>{children}</div>
-      ) : (
+      {children ? <div onClick={onOpen}>{children}</div> : (
         <Button onClick={onOpen} style={{ backgroundColor: "#00f0b5" }}>Create Chat</Button>
       )}
       <Modal onClose={onClose} isOpen={isOpen} isCentered>
@@ -80,32 +65,18 @@ export const GroupChatModel = ({ children }: GroupChatModelProps) => {
           <ModalCloseButton />
           <ModalBody display="flex" flexDir="column" alignItems="center">
             <FormControl>
-              <Input
-                placeholder="Chat Name"
-                mb={3}
-                onChange={(e) => setGroupChatName(e.target.value)}
-              />
+              <Input placeholder="Chat Name" mb={3} onChange={(e) => setGroupChatName(e.target.value)} />
             </FormControl>
             <FormControl>
-              <Input
-                placeholder="Add Users e.g. John, Piyush, Jane"
-                mb={1}
-                onChange={(e) => searchUsers(e.target.value)}
-              />
+              <Input placeholder="Add Users e.g. John, Piyush, Jane" mb={1}
+                onChange={(e) => searchUsers(e.target.value)} />
             </FormControl>
             <Box w="100%" display="flex" flexWrap="wrap">
               {selectedUsers.map((u) => (
-                <UserBadgeItem
-                  key={u._id}
-                  user={u}
-                  handleFunction={() => handleRemoveUser(u)}
-                  admin={undefined}
-                />
+                <UserBadgeItem key={u._id} user={u} handleFunction={() => handleRemoveUser(u)} admin={undefined} />
               ))}
             </Box>
-            {loading ? (
-              <Spinner size="lg" />
-            ) : (
+            {loading ? <Spinner size="lg" /> : (
               searchResult.slice(0, 4).map((u) => (
                 <UserListItem key={u._id} user={u} handleFunction={() => handleAddUser(u)} />
               ))

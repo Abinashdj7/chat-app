@@ -1,43 +1,38 @@
-﻿export const getSenderFull=(loggedUser:any,users:any) => {
-    return users[0].id===loggedUser?._id?users[1]:users[0]
-}
-export const getSender=(loggedUser:any,users:any) => {
-    if(Array.isArray(users)){
-        const otherUser = users.find(user => user.id !== loggedUser?._id);
-        return otherUser ? otherUser.name : "Unknown sender";
-    }
-    else if(!Array.isArray(users) && users){
-        return users.name || "Unknown sender"
-    }
-    else{
-        return "Unknown sender"
-    }
-}
-export const isSameSender=(messages:any,m:any,i:any,userId:any) => {
-    return(
-        i<messages.length-1 &&
-        (messages[i+1].sender._id!==m.sender._id ||
-            messages[i+1].sender._id===undefined) &&
-            messages[i].sender._id!==userId
-    )
-}
-export const isLatestMessage=(messages:any,i:any,userId:any) => {
-    return(
-        i===messages.length-1 &&
-        messages[messages.length-1].sender._id!==userId &&
-        messages[messages.length-1].sender._id
-    )
-}
-export const isSameSenderMargin=(messages:any,m:any,i:any,userId:any) => {
-    if(i<messages.length-1 &&
-        messages[i+1].sender._id===m.sender._id &&
-        messages[i].sender._id!==userId){
-            return 33;
-        }
-    else{
-        return "auto"
-    }
-}
-export const isSameUser=(messages:any,m:any,i:any)  => {
-    return(i>0 && messages[i-1].sender._id===m.sender._id)
-}   
+import type { User, Message } from "./types";
+
+export const getSenderFull = (loggedUser: User, users: User[]): User =>
+  users[0]._id === loggedUser._id ? users[1] : users[0];
+
+export const getSender = (loggedUser: User | null, users: User[] | User): string => {
+  if (Array.isArray(users)) {
+    const other = users.find((u) => u._id !== loggedUser?._id);
+    return other?.name ?? "Unknown sender";
+  }
+  return users.name ?? "Unknown sender";
+};
+
+export const isSameSender = (
+  messages: Message[], m: Message, i: number, userId: string | undefined
+): boolean =>
+  i < messages.length - 1 &&
+  (messages[i + 1].sender._id !== m.sender._id || messages[i + 1].sender._id === undefined) &&
+  messages[i].sender._id !== userId;
+
+export const isLatestMessage = (
+  messages: Message[], i: number, userId: string | undefined
+): boolean =>
+  i === messages.length - 1 &&
+  messages[messages.length - 1].sender._id !== userId &&
+  Boolean(messages[messages.length - 1].sender._id);
+
+export const isSameSenderMargin = (
+  messages: Message[], m: Message, i: number, userId: string | undefined
+): number | string =>
+  i < messages.length - 1 &&
+  messages[i + 1].sender._id === m.sender._id &&
+  messages[i].sender._id !== userId
+    ? 33
+    : "auto";
+
+export const isSameUser = (messages: Message[], m: Message, i: number): boolean =>
+  i > 0 && messages[i - 1].sender._id === m.sender._id;
