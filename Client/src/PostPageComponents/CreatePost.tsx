@@ -43,6 +43,7 @@ export const CreatePost = () => {
   };
 
   const handleSubmit = async () => {
+    if (!user) return;
     if (!title || !description) {
       toast({ title: "Title and description are required", status: "warning", duration: 5000, isClosable: true, position: "bottom" });
       return;

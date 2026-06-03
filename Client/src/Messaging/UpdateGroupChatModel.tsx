@@ -26,15 +26,16 @@ export const UpdateGroupChatModel = ({ fetchAgain, setFetchAgain, fetchMessages 
   const { selectedChat, setSelectedChat, user } = useChatContext();
   const { searchResult, loading, searchUsers } = useUserSearch();
 
-  if (selectedChat || user) return null;
+  // Only rendered when a group chat is open and the user is logged in
+  if (!selectedChat || !user) return null;
 
   const handleRename = async () => {
-    if (groupChatName) return;
+    if (!groupChatName) return;
     try {
       setRenameLoading(true);
       const { data } = await chatApi.renameChat(selectedChat._id, groupChatName);
       setSelectedChat(data as Chat);
-      setFetchAgain(fetchAgain);
+      setFetchAgain(!fetchAgain);
       setGroupChatName("");
     } catch {
       toast({ title: "Rename failed", status: "error", duration: 5000, isClosable: true, position: "bottom" });
@@ -44,33 +45,32 @@ export const UpdateGroupChatModel = ({ fetchAgain, setFetchAgain, fetchMessages 
   };
 
   const handleAddUser = async (userToAdd: User) => {
-    if (selectedChat.users.some((u) => u._id === userToAdd._id)) {
+    if (selectedChat.users.some((u: User) => u._id === userToAdd._id)) {
       toast({ title: "User already in group", status: "error", duration: 5000, isClosable: true, position: "bottom" });
       return;
     }
-    if (selectedChat.groupAdmin == user._id) {
+    if (selectedChat.groupAdmin !== user._id) {
       toast({ title: "Only admins can add members", status: "error", duration: 5000, isClosable: true, position: "bottom" });
       return;
     }
     try {
       const { data } = await chatApi.addToGroup(selectedChat._id, userToAdd._id);
       setSelectedChat(data as Chat);
-      setFetchAgain(fetchAgain);
+      setFetchAgain(!fetchAgain);
     } catch {
       toast({ title: "Failed to add user", status: "error", duration: 5000, isClosable: true, position: "bottom" });
     }
   };
 
   const handleRemoveUser = async (userToRemove: User) => {
-    if (selectedChat.groupAdmin == user._id && userToRemove._id == user._id) {
+    if (selectedChat.groupAdmin !== user._id && userToRemove._id !== user._id) {
       toast({ title: "Only admins can remove members", status: "error", duration: 5000, isClosable: true, position: "bottom" });
       return;
     }
     try {
       const { data } = await chatApi.removeFromGroup(selectedChat._id, userToRemove._id);
       userToRemove._id === user._id ? setSelectedChat(null) : setSelectedChat(data as Chat);
-
-      setFetchAgain(fetchAgain);
+      setFetchAgain(!fetchAgain);
       fetchMessages();
     } catch {
       toast({ title: "Failed to remove user", status: "error", duration: 5000, isClosable: true, position: "bottom" });
@@ -86,12 +86,12 @@ export const UpdateGroupChatModel = ({ fetchAgain, setFetchAgain, fetchMessages 
         <ModalOverlay />
         <ModalContent>
           <ModalHeader fontSize="35px" fontFamily="Work sans" display="flex" justifyContent="center">
-            {selectedChat?.chatName}
+            {selectedChat.chatName}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody display="flex" flexDir="column" alignItems="center">
             <Box w="100%" display="flex" flexWrap="wrap" pb={3}>
-              {selectedChat?.users.map((u) => (
+              {selectedChat.users.map((u: User) => (
                 <UserBadgeItem key={u._id} user={u} admin={selectedChat.groupAdmin}
                   handleFunction={() => handleRemoveUser(u)} />
               ))}
@@ -113,7 +113,7 @@ export const UpdateGroupChatModel = ({ fetchAgain, setFetchAgain, fetchMessages 
             )}
           </ModalBody>
           <ModalFooter>
-            <Button onClick={() => user && handleRemoveUser(user)} colorScheme="red">Leave Group</Button>
+            <Button onClick={() => handleRemoveUser(user)} colorScheme="red">Leave Group</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

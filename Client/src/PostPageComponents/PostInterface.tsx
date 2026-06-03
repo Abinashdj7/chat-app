@@ -13,7 +13,7 @@ export const PostInterface = ({ post }: Props) => {
   const { user } = useChatContext();
   const [newComment, setNewComment] = useState("");
   const { likes, comments, loading, hasLiked, addLike, removeLike, addComment } =
-    usePostActions(post._id, user?._id);
+    usePostActions(post._id, user?._id ?? '');
 
   const handleComment = async () => {
     if (!newComment.trim()) return;
