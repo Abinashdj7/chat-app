@@ -1,20 +1,15 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useChatContext } from "../ChatProvider";
-
 import { getSenderFull } from "../ChatLogic";
 import { ProfileModel } from "../UserComponents/ProfileModel";
 import { UpdateGroupChatModel } from "./UpdateGroupChatModel";
 import { Spinner, useToast, Text, IconButton, Box, FormControl, Button, Textarea } from "@chakra-ui/react";
-import axios, { AxiosRequestConfig } from "axios";
 import { ScrollableChat } from "./ScrollableChat";
-import io from "socket.io-client";
 import Lottie from "lottie-react";
 import animationData from "../Animation.json";
 import { GoArrowLeft } from "icons-react/go";
-
-const ENDPOINT = 'http://localhost:5050';
-let socket: any;
-let selectedChatCompare: any;
+import { useSocket } from "../hooks/useSocket";
+import { messageApi } from "../services/api";
 
 interface Props {
   fetchAgain: boolean;
@@ -26,123 +21,81 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState("");
-  const { user, selectedChat, setSelectedChat, notification, setNotification } = useChatContext();
+  const typingRef = useRef(false);
 
-  const [socketConnected, setSocketConnected] = useState(false);
-  const [typing, setTyping] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const { user, selectedChat, setSelectedChat, setNotification } = useChatContext();
+  const { socketRef, connected: socketConnected, isTyping } = useSocket(user);
 
-  const defaultOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: animationData,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice"
-    }
-  };
+  // Keep a ref to selectedChat so the message-received handler always sees the latest value
+  // without needing to be re-registered on every chat change
+  const selectedChatRef = useRef<any>(null);
+  useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
 
   const fetchMessages = async () => {
-    if (!selectedChat) {
-      return;
-    }
+    if (!selectedChat) return;
     try {
-      const config: AxiosRequestConfig = {
-        headers: {
-          Authorization: `Bearer ${user.token}`
-        }
-      };
       setLoading(true);
-      const { data } = await axios.get(`http://localhost:5050/api/messages/${selectedChat._id}`, config);
+      const { data } = await messageApi.fetchMessages(selectedChat._id);
       setMessages(data);
+      socketRef.current?.emit("join chat", selectedChat._id);
+    } catch {
+      toast({ title: "Error loading messages", status: "warning", duration: 5000, isClosable: true, position: "bottom" });
+    } finally {
       setLoading(false);
-      socket.emit("join chat", selectedChat._id);
-    } catch (err) {
-      toast({
-        title: "Error occurred",
-        status: "warning",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom"
-      });
     }
   };
 
-  const sendMessage = async (event: any) => {
-    if (event.key === "Enter" && newMessage) {
-      socket.emit("stop typing", selectedChat._id);
-    }
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedChat) return;
+    socketRef.current?.emit("stop typing", selectedChat._id);
+    typingRef.current = false;
+    const content = newMessage;
+    setNewMessage("");
     try {
-      const config: AxiosRequestConfig = {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${user.token}`
-        }
-      };
-      setNewMessage("");
-      const { data } = await axios.post("http://localhost:5050/api/messages", {
-        content: newMessage,
-        chatId: selectedChat
-      }, config);
-      socket.emit("new message", data);
-      setMessages([...messages, data]);
-    } catch (err) {
-      toast({
-        title: "Error occurred",
-        status: "error",
-        duration: 5000,
-        isClosable: true,
-        position: "bottom"
-      });
+      const { data } = await messageApi.sendMessage(content, selectedChat._id);
+      socketRef.current?.emit("new message", data);
+      setMessages((prev) => [...prev, data]);
+    } catch {
+      toast({ title: "Error sending message", status: "error", duration: 5000, isClosable: true, position: "bottom" });
     }
   };
-
-  useEffect(() => {
-    socket = io(ENDPOINT);
-    socket.emit("setup", user);
-    socket.on("connected", () => setSocketConnected(true));
-    socket.on("typing", () => setIsTyping(true));
-    socket.on("stop typing", () => setIsTyping(false));
-  }, []);
 
   useEffect(() => {
     fetchMessages();
-    selectedChatCompare = selectedChat;
   }, [selectedChat]);
 
+  // Register message-received handler once when socket connects; use refs to avoid stale closures
   useEffect(() => {
-    socket.on("message received", (newMessageReceived: any) => {
-      if (!selectedChatCompare ||
-        selectedChatCompare._id !== newMessageReceived.chat._id) {
-        if (Array.isArray(notification) && !notification.includes(newMessageReceived)) {
-          setNotification([newMessageReceived, ...notification]);
-          setFetchAgain(!fetchAgain);
-        }
+    const socket = socketRef.current;
+    if (!socket || !socketConnected) return;
+    const handleMessage = (newMsg: any) => {
+      if (!selectedChatRef.current || selectedChatRef.current._id !== newMsg.chat._id) {
+        setNotification((prev: any) =>
+          Array.isArray(prev) && !prev.includes(newMsg) ? [newMsg, ...prev] : [newMsg]
+        );
+        setFetchAgain((prev) => !prev);
+      } else {
+        setMessages((prev) => [...prev, newMsg]);
       }
-      else {
-        setMessages([...messages, newMessageReceived]);
-      }
-    });
-  });
+    };
+    socket.on("message recieved", handleMessage);
+    return () => { socket.off("message recieved", handleMessage); };
+  }, [socketConnected]);
 
-  const typingHandler = async (e: any) => {
+  const typingHandler = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value);
-    if (!socketConnected) {
-      return;
+    if (!socketConnected || !selectedChat) return;
+    if (!typingRef.current) {
+      typingRef.current = true;
+      socketRef.current?.emit("typing", selectedChat._id);
     }
-    if (!typing) {
-      setTyping(true);
-      socket.emit("typing", selectedChat._id);
-    }
-    const lastTypingTime = new Date().getTime();
-    const timeLength = 3000;
+    const lastTypingTime = Date.now();
     setTimeout(() => {
-      const timeNow = new Date().getTime();
-      const timeDiff = timeNow - lastTypingTime;
-      if (timeDiff >= timeLength && typing) {
-        socket.emit("stop typing", selectedChat._id);
-        setTyping(false);
+      if (Date.now() - lastTypingTime >= 3000 && typingRef.current) {
+        socketRef.current?.emit("stop typing", selectedChat._id);
+        typingRef.current = false;
       }
-    }, timeLength);
+    }, 3000);
   };
 
   return (
@@ -158,30 +111,31 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
             display="flex"
             justifyContent={{ base: "space-between" }}
             alignItems="center"
-            backgroundColor={"#00f0b5"}
+            backgroundColor="#00f0b5"
           >
             <IconButton
-              aria-label="Icon Button"
+              aria-label="Go back"
               display={{ base: "flex", md: "none" }}
               icon={<GoArrowLeft />}
               onClick={() => setSelectedChat("")}
             />
-            {messages &&
-              (!selectedChat.isGroupChat ? (
-                <>
-                  {selectedChat.users[1].name === user.name ? selectedChat.users[0].name : selectedChat.users[1].name}
-                  <ProfileModel user={getSenderFull(user, selectedChat.users)} />
-                </>
-              ) : (
-                <>
-                  {selectedChat.chatName.toUpperCase()}
-                  <UpdateGroupChatModel
-                    fetchMessages={fetchMessages}
-                    fetchAgain={fetchAgain}
-                    setFetchAgain={setFetchAgain}
-                  />
-                </>
-              ))}
+            {!selectedChat.isGroupChat ? (
+              <>
+                {selectedChat.users[1].name === user.name
+                  ? selectedChat.users[0].name
+                  : selectedChat.users[1].name}
+                <ProfileModel user={getSenderFull(user, selectedChat.users)} />
+              </>
+            ) : (
+              <>
+                {selectedChat.chatName.toUpperCase()}
+                <UpdateGroupChatModel
+                  fetchMessages={fetchMessages}
+                  fetchAgain={fetchAgain}
+                  setFetchAgain={setFetchAgain}
+                />
+              </>
+            )}
           </Text>
           <Box
             display="flex"
@@ -195,54 +149,37 @@ export const SingleChat = ({ fetchAgain, setFetchAgain }: Props) => {
             overflowY="hidden"
           >
             {loading ? (
-              <Spinner
-                size="xl"
-                w={20}
-                h={20}
-                alignSelf="center"
-                margin="auto"
-              />
+              <Spinner size="xl" w={20} h={20} alignSelf="center" margin="auto" />
             ) : (
               <div className="messages">
                 <ScrollableChat messages={messages} />
               </div>
             )}
-
-            <FormControl
-              id="first-name"
-              isRequired
-              mt={3}
-            >
-              {isTyping ? (
-                <div>
-                  <Lottie
-                    animationData={defaultOptions.animationData}
-                    loop={defaultOptions.loop}
-                    autoplay={defaultOptions.autoplay}
-                    style={{ marginBottom: 15, marginLeft: 0 }}
-                  />
-                </div>
-              ) : (
-                <></>
+            <FormControl id="message-input" isRequired mt={3}>
+              {isTyping && (
+                <Lottie
+                  animationData={animationData}
+                  loop
+                  autoplay
+                  style={{ marginBottom: 15, marginLeft: 0 }}
+                />
               )}
               <Textarea
                 variant="filled"
                 placeholder="Enter a message.."
                 value={newMessage}
-                backgroundColor={"#c8e9a0"}
+                backgroundColor="#c8e9a0"
                 onChange={typingHandler}
               />
               <div style={{ marginTop: "5px" }}>
-                <Button onClick={sendMessage} backgroundColor={"#FC4445"}>Send</Button>
+                <Button onClick={sendMessage} backgroundColor="#FC4445">Send</Button>
               </div>
             </FormControl>
           </Box>
         </>
       ) : (
-        <Box sx={{ padding: 10, backgroundImage: "https://img.freepik.com/free-vector/beautiful-decorative-soft-colorful-watercolor-texture-background_1055-14290.jpg?size=626&ext=jpg&ga=GA1.1.1687694167.1711584000&semt=ais" }}>
-        </Box>
+        <Box sx={{ padding: 10, backgroundImage: "https://img.freepik.com/free-vector/beautiful-decorative-soft-colorful-watercolor-texture-background_1055-14290.jpg?size=626&ext=jpg&ga=GA1.1.1687694167.1711584000&semt=ais" }} />
       )}
     </>
   );
 };
-

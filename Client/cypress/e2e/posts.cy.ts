@@ -31,7 +31,6 @@ describe('Posts Page', () => {
   })
 
   it('shows a warning when creating a post without title or description', () => {
-    cy.intercept('POST', '**/api/posts', { body: {} }).as('createPost')
     cy.contains('button', 'Create Post').click()
     cy.contains(/title or description/i).should('be.visible')
   })

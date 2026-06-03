@@ -1,88 +1,27 @@
 # ChatApp
 
-A full-stack real-time chat and social feed application built with React, Node.js, Socket.IO, and MongoDB — fully containerised with Docker and covered by a CI/CD pipeline.
-
----
-
-## Features
-
-- **Real-time messaging** via Socket.IO with typing indicators
-- **1-to-1 and group chats** with admin controls (add/remove members, rename)
-- **Social feed** — create posts with image uploads, like, and comment
-- **JWT authentication** — register, login, and protected routes
-- **User search** — find other users to start a chat
-- **Notifications** — unread message badges
-- **Fully containerised** — runs with a single `docker compose up`
-- **CI/CD pipeline** — automated lint, tests, and Docker build on every push
-
----
+A full-stack real-time chat and social media application.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 18, TypeScript, Vite |
-| UI | Chakra UI, Framer Motion, Lottie |
-| Real-time | Socket.IO |
-| HTTP client | Axios |
-| Backend | Node.js, Express.js |
-| Database | MongoDB, Mongoose |
-| Auth | JWT (jsonwebtoken), bcrypt |
-| Image uploads | Cloudinary |
-| Containerisation | Docker, Docker Compose, nginx |
-| CI/CD | GitHub Actions |
-| Testing | Jest (server), Vitest + React Testing Library (client) |
+| Frontend | React 18, TypeScript, Vite, Chakra UI |
+| Backend | Node.js, Express |
+| Database | MongoDB (Mongoose) |
+| Cache | Redis (ioredis) |
+| Real-time | Socket.io |
+| Auth | JWT (30-day expiry), bcrypt |
+| Image upload | Cloudinary |
 
 ---
 
-## Architecture
-
-```
-Browser
-  │
-  ├── HTTP (port 8080) ──► nginx (client container)
-  │                            └── serves React SPA
-  │
-  └── HTTP/WS (port 5050) ──► Express + Socket.IO (server container)
-                                    └── Mongoose ──► MongoDB (mongo container)
-```
-
-Three Docker containers communicate over an internal Docker network. The React app is built at image-build time and served as static files by nginx. The Express server handles all API and WebSocket traffic. MongoDB data is persisted via a named Docker volume.
-
----
-
-## Folder Structure
+## Project Structure
 
 ```
 chat-app/
-├── Client/                  # React + TypeScript frontend
-│   ├── src/
-│   │   ├── __tests__/       # Vitest unit tests
-│   │   ├── Authentication/  # Login & SignUp forms
-│   │   ├── ChatPageComponents/  # Chat list, search drawer
-│   │   ├── Messaging/       # Single chat, group chat modals, scrollable feed
-│   │   ├── Pages/           # Route-level page components
-│   │   ├── PostPageComponents/  # Posts, comments, likes
-│   │   ├── UserComponents/  # User badges, list items, profile modal
-│   │   ├── ChatLogic.tsx    # Pure message-rendering utility functions
-│   │   ├── ChatProvider.tsx # Global React context + custom hook
-│   │   └── App.tsx          # Router root
-│   ├── Dockerfile (via Dockerfile.client)
-│   └── nginx.conf
-│
-├── Server/                  # Node.js + Express backend
-│   ├── Controllers/         # Route handler logic
-│   ├── MiddleWare/          # Auth, error handling, JWT generation
-│   ├── Models/              # Mongoose schemas
-│   ├── Routes/              # Express routers
-│   ├── __tests__/           # Jest unit tests
-│   ├── App.js               # Express app + Socket.IO setup
-│   └── Db.js                # MongoDB connection
-│
-├── Dockerfile.client
-├── Dockerfile.server
-├── docker-compose.yml
-└── .github/workflows/ci.yml
+├── Client/          # React + TypeScript frontend (Vite)
+└── Server/          # Node.js + Express backend
 ```
 
 ---
@@ -91,160 +30,178 @@ chat-app/
 
 ### Prerequisites
 
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Git
+- Node.js 18+
+- MongoDB instance
+- Redis instance
+- Cloudinary account
 
-### Installation
+### Environment Variables
 
-```bash
-git clone https://github.com/Abinashdj7/chat-app.git
-cd chat-app
+Create `Server/MiddleWare/.env`:
+
+```
+MONGO_URI=<your MongoDB connection string>
+JWT_SECRET=<your JWT secret>
+REDIS_URL=redis://localhost:6379
+CLIENT_URL=http://localhost:5173
 ```
 
-Create a `.env` file in the project root:
+Create `Client/.env` (optional — defaults to `http://localhost:5050`):
 
-```bash
-cp .env.example .env
+```
+VITE_API_URL=http://localhost:5050
 ```
 
-Then fill in your values (see [Environment Variables](#environment-variables)).
-
-### Run with Docker
+### Install & Run
 
 ```bash
-docker compose up --build
-```
+# Backend
+cd Server
+npm install
+npm start
 
-| Service | URL |
-|---|---|
-| Frontend | http://localhost:8080 |
-| Backend API | http://localhost:5050 |
-| MongoDB | localhost:27017 |
-
----
-
-## Environment Variables
-
-Create a `.env` file at the project root (`chat-app/.env`):
-
-```env
-MONGO_URI=mongodb://mongo:27017/chatapp
-CLIENT_URL=http://localhost:8080
-JWT_SECRET=your_long_random_secret_here
-```
-
-| Variable | Description |
-|---|---|
-| `MONGO_URI` | MongoDB connection string. Defaults to the containerised MongoDB instance. |
-| `CLIENT_URL` | Origin allowed by Socket.IO CORS — must match the URL the browser loads the app from. |
-| `JWT_SECRET` | Secret used to sign and verify JWT tokens. Use a long random string in production. |
-
-> **Never commit `.env` to version control.** It is listed in `.gitignore`.
-
----
-
-## Development Scripts
-
-### Client (`Client/`)
-
-```bash
-npm run dev          # Start Vite dev server (hot reload)
-npm run build        # TypeScript check + production build
-npm run lint         # ESLint across all .ts/.tsx files
-npm run test         # Run Vitest in watch mode
-npm run test:coverage  # Run Vitest with coverage report
-```
-
-### Server (`Server/`)
-
-```bash
-npm start   # Start Express server with node
-npm test    # Run Jest unit tests
+# Frontend (separate terminal)
+cd Client
+npm install
+npm run dev
 ```
 
 ---
 
-## API Overview
+## Testing
 
-All routes are prefixed with `/api`. Protected routes require a `Bearer <token>` Authorization header.
+### Unit Tests — Frontend (Vitest)
 
-| Method | Endpoint | Auth | Description |
-|---|---|---|---|
-| POST | `/api/users` | No | Register a new user |
-| POST | `/api/users/login` | No | Login and receive a JWT |
-| GET | `/api/users?search=` | Yes | Search users by name or email |
-| GET | `/api/chats` | Yes | Get all chats for the logged-in user |
-| POST | `/api/chats` | Yes | Access or create a 1-to-1 chat |
-| POST | `/api/chats/group` | Yes | Create a group chat |
-| PUT | `/api/chats/rename` | Yes | Rename a group chat |
-| PUT | `/api/chats/groupadd` | Yes | Add a user to a group |
-| PUT | `/api/chats/groupremove` | Yes | Remove a user from a group |
-| GET | `/api/messages/:chatId` | Yes | Get all messages in a chat |
-| POST | `/api/messages` | Yes | Send a message |
-| GET | `/api/posts` | Yes | Get all posts (newest first) |
-| POST | `/api/posts` | Yes | Create a post |
-| POST | `/api/likes` | Yes | Like a post |
-| DELETE | `/api/likes/:postId/:userId` | Yes | Unlike a post |
-| GET | `/api/comments/:postId` | Yes | Get comments on a post |
-| POST | `/api/comments` | Yes | Add a comment to a post |
+```bash
+cd Client && npm test -- --run
+```
 
-### Socket.IO Events
-
-| Event (emit) | Payload | Description |
+| Suite | Tests | What is covered |
 |---|---|---|
-| `setup` | `userData` | Join personal notification room on connect |
-| `join chat` | `roomId` | Join a chat room |
-| `new message` | `messageObject` | Broadcast a new message to the room |
-| `typing` | `roomId` | Notify others the user is typing |
-| `stop typing` | `roomId` | Notify others the user stopped typing |
+| `ChatLogic.test.ts` | 16 | Utility functions: getSender, isSameSender, isLatestMessage, margins |
+| `Login.test.tsx` | 4 | Form validation, API call, localStorage, navigation, error handling |
 
----
+### Backend Tests — Unit + Integration (Jest)
 
-## CI/CD Pipeline
-
-GitHub Actions runs on every push and pull request to `main`:
-
-```
-test-server ──┐
-              ├──► docker-build
-test-client ──┘
+```bash
+cd Server && npm test
 ```
 
-1. **Server Tests** — installs dependencies and runs Jest
-2. **Client Lint & Tests** — runs ESLint then Vitest
-3. **Docker Build** — builds both images only if tests pass
+Both unit and integration tests run in the same command (34 tests, 6 suites).
+
+#### Unit Tests
+
+| Suite | What is covered |
+|---|---|
+| `UserController.test.js` | Register and login handlers with mocked database |
+| `AuthMiddleware.test.js` | JWT validation — valid token, missing token, malformed token |
+
+#### Integration Tests
+
+These tests spin up a real in-memory MongoDB (`mongodb-memory-server`) and exercise the full Express request/response cycle — no mocks.
+
+| Suite | What is covered |
+|---|---|
+| `integration/auth.test.js` | Registration, duplicate email prevention, login success and failure |
+| `integration/users.test.js` | Authenticated user search |
+| `integration/chats.test.js` | Creating and fetching 1-to-1 and group chats |
+| `integration/posts.test.js` | Creating and fetching posts |
+
+### End-to-End Tests (Cypress)
+
+E2E tests require the dev server to be running.
+
+**Terminal 1 — start the dev server:**
+```bash
+cd Client && npm run dev
+```
+
+**Terminal 2 — run headlessly:**
+```bash
+cd Client && npm run test:e2e
+```
+
+**Or open the interactive Cypress UI:**
+```bash
+cd Client && npm run test:e2e:open
+```
+
+Suites: `auth.cy.ts`, `chat.cy.ts`, `posts.cy.ts`
 
 ---
 
-## Deployment Notes
+## Security — OWASP Top 10
 
-- The `MONGO_URI` defaults to the containerised MongoDB. To use MongoDB Atlas, set `MONGO_URI` to your Atlas connection string in `.env`.
-- `JWT_SECRET` must be a strong random value in production. Generate one with:
-  ```bash
-  python -c "import secrets; print(secrets.token_hex(64))"
-  ```
-- Windows users: port 5000 is reserved by Hyper-V. The server is mapped to **5050** on the host by default.
-- The client container uses nginx to serve the React build and can be placed behind a reverse proxy (Nginx, Traefik, Caddy) in production.
-
----
-
-## Future Improvements
-
-- Replace `any` types throughout the client with proper TypeScript interfaces
-- Add a centralised API service layer to remove hardcoded `localhost:5050` URLs
-- Persist notifications across page refreshes
-- Add end-to-end tests with Playwright or Cypress
-- Add message pagination to avoid loading entire chat history on open
-- Fix socket memory leak in `SingleChat` — add cleanup on component unmount
+| Threat | Mitigation applied |
+|---|---|
+| **A01 Broken Access Control** | Every protected route verifies a valid JWT via `AuthMiddleware.protect`. Group admin actions (add/remove members, rename) enforce role checks server-side, not just client-side. |
+| **A02 Cryptographic Failures** | Passwords are hashed with bcrypt before storage. JWTs use HS256 with a secret loaded from environment variables — never hardcoded. |
+| **A03 Injection** | All MongoDB queries go through Mongoose (parameterised). User-supplied search strings are regex-escaped before use in `$regex` queries, preventing ReDoS attacks. |
+| **A05 Security Misconfiguration** | `helmet` sets secure HTTP response headers on every response. CORS is restricted to the `CLIENT_URL` environment variable — not a wildcard. |
+| **A07 Identification & Authentication Failures** | The `/api/users/login` endpoint is rate-limited to 20 requests per 15 minutes via `express-rate-limit`. JWT tokens expire after 30 days. |
+| **A09 Security Logging & Monitoring Failures** | All unmatched routes return a structured `404` before the global error handler. Server errors are returned as consistent JSON rather than leaking stack traces. |
 
 ---
 
-## Contributing
+## Clean Code — KISS & SOLID
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit your changes: `git commit -m "Add your feature"`
-4. Push to the branch: `git push origin feature/your-feature`
-5. Open a pull request against `main`
+### Centralised API layer (DIP + KISS)
 
-All PRs must pass the CI pipeline (lint, tests, Docker build) before merging.
+All HTTP calls are routed through [`Client/src/services/api.ts`](Client/src/services/api.ts) — a single axios instance with:
+
+- `baseURL` from an environment variable (`VITE_API_URL`)
+- Auth header injected once via a request interceptor, not repeated in every component
+- Named domain functions (`authApi.login`, `chatApi.fetchChats`, `messageApi.sendMessage`, etc.)
+
+Before this, `http://localhost:5050` and the auth header config object were duplicated in over ten components.
+
+### Custom hooks (SRP)
+
+Each hook owns exactly one concern:
+
+| Hook | Responsibility |
+|---|---|
+| [`useSocket`](Client/src/hooks/useSocket.ts) | Socket.io connection lifecycle, setup handshake, typing indicator state |
+| [`useUserSearch`](Client/src/hooks/useUserSearch.ts) | User search API call, loading state, error toast |
+| [`usePostActions`](Client/src/hooks/usePostActions.ts) | Fetch and mutate likes and comments for a single post |
+
+### Shared hooks eliminate duplication (OCP / DRY)
+
+`useUserSearch` is consumed by `SideDrawer`, `GroupChatModel`, and `UpdateGroupChatModel`. The identical search-fetch-loading pattern that previously lived in all three components now lives in one place.
+
+### Bugs fixed during refactor
+
+| Location | Bug |
+|---|---|
+| `PostInterface.tsx` | `getLike()` called `axios.delete` instead of `axios.get` — fixed via `usePostActions` |
+| `Comments.tsx` | Rendered `c.user` (always `undefined`) instead of `c.sender.name` |
+| `SingleChat.tsx` | Sent `chatId: selectedChat` (the whole object) instead of `chatId: selectedChat._id`; module-level `socket` and `selectedChatCompare` variables replaced with `useRef`; the `message received` effect had no deps array or cleanup, adding a new listener on every render |
+| `GroupChatModel.tsx` | `handleSearch` referenced stale `search` state instead of the live `query` parameter (closure bug) |
+| `Login.tsx` | Success toast title said "Registration" |
+| `NavBar.tsx` | Notification item displayed literal string `"GetSender"` instead of the sender's name |
+| `LikeController.js` | `addLIke` export name typo |
+
+---
+
+## API Reference
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| POST | `/api/users` | No | Register |
+| POST | `/api/users/login` | No | Login (rate-limited) |
+| GET | `/api/users?search=` | Yes | Search users |
+| POST | `/api/chats` | Yes | Create / fetch 1-to-1 chat |
+| GET | `/api/chats` | Yes | List user's chats |
+| POST | `/api/chats/group` | Yes | Create group chat |
+| PUT | `/api/chats/rename` | Yes | Rename group chat |
+| PUT | `/api/chats/groupadd` | Yes | Add user to group (admin only) |
+| PUT | `/api/chats/groupremove` | Yes | Remove user from group |
+| POST | `/api/messages` | Yes | Send message |
+| GET | `/api/messages/:chatId` | Yes | Fetch messages for a chat |
+| POST | `/api/posts` | Yes | Create post |
+| GET | `/api/posts` | Yes | Fetch all posts |
+| POST | `/api/likes` | Yes | Like a post |
+| GET | `/api/likes/:postId` | Yes | Get likes for a post |
+| DELETE | `/api/likes/:postId/:userId` | Yes | Unlike a post |
+| POST | `/api/comments` | Yes | Add comment |
+| GET | `/api/comments/:postId` | Yes | Get comments for a post |

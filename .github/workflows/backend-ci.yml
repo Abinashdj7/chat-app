@@ -1,0 +1,38 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [main, backend]
+    paths:
+      - 'Server/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Server/**'
+
+jobs:
+  test:
+    name: Jest (unit + integration)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Server/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Server
+        run: npm ci
+
+      - name: Run tests
+        working-directory: Server
+        env:
+          JWT_SECRET: test-secret-for-ci
+          NODE_ENV: test
+        run: npm test

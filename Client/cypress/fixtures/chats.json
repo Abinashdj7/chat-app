@@ -4,8 +4,8 @@
     "chatName": "sender",
     "isGroupChat": false,
     "users": [
-      { "_id": "64f1a2b3c4d5e6f7a8b9c0d1", "name": "Test User", "email": "test@chatapp.dev", "pic": null },
-      { "_id": "64f1a2b3c4d5e6f7a8b9c0d2", "name": "Alice", "email": "alice@chatapp.dev", "pic": null }
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d2", "name": "Alice", "email": "alice@chatapp.dev", "pic": null },
+      { "_id": "64f1a2b3c4d5e6f7a8b9c0d1", "name": "Test User", "email": "test@chatapp.dev", "pic": null }
     ],
     "latestMessage": {
       "_id": "msg001",

@@ -17,8 +17,9 @@ describe('Chat Page', () => {
     cy.contains('Dev Team').should('be.visible')
   })
 
-  it('shows the latest message preview in the chat list', () => {
-    cy.contains('Hey there!').should('be.visible')
+  it('shows correct subtitles for direct and group chats', () => {
+    cy.contains('Direct Message').should('be.visible')
+    cy.contains('Group Chat').should('be.visible')
   })
 
   it('opens the search drawer when Search is clicked', () => {

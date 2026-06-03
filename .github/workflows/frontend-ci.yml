@@ -1,0 +1,80 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main, backend]
+    paths:
+      - 'Client/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'Client/**'
+
+jobs:
+  test:
+    name: Vitest (unit)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Client
+        run: npm ci
+
+      - name: Run tests
+        working-directory: Client
+        run: npm test -- --run
+
+  typecheck:
+    name: TypeScript type check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Client
+        run: npm ci
+
+      - name: Type check
+        working-directory: Client
+        run: npx tsc --noEmit
+
+  build:
+    name: Vite build
+    runs-on: ubuntu-latest
+    needs: [test, typecheck]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: Client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Client
+        run: npm ci
+
+      - name: Build
+        working-directory: Client
+        run: npm run build
