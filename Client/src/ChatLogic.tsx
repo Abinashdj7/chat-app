@@ -3,7 +3,8 @@ import type { User, Message } from "./types";
 export const getSenderFull = (loggedUser: User, users: User[]): User =>
   users[0]._id === loggedUser._id ? users[1] : users[0];
 
-export const getSender = (loggedUser: User | null, users: User[] | User): string => {
+export const getSender = (loggedUser: User | null, users: User[] | User | null): string => {
+  if (!users) return "Unknown sender";
   if (Array.isArray(users)) {
     const other = users.find((u) => u._id !== loggedUser?._id);
     return other?.name ?? "Unknown sender";

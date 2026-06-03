@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/jest-dom" />
 import { describe, test, expect } from 'vitest'
 import {
   getSender,
@@ -6,19 +7,24 @@ import {
   isLatestMessage,
   isSameUser,
 } from '../ChatLogic'
+import type { User, Message } from '../types'
 
-const userA = { _id: 'a1', name: 'Alice' }
+const userA: User = { _id: 'a1', name: 'Alice' }
+
+// Minimal message fixture — only the fields ChatLogic actually reads
+const msg = (senderId: string) =>
+  ({ sender: { _id: senderId } }) as unknown as Message
 
 // getSender ---------------------------------------------------------------
 
 describe('getSender', () => {
   test('returns the other user name in a 1-1 chat', () => {
-    const users = [{ id: 'a1', name: 'Alice' }, { id: 'b2', name: 'Bob' }]
+    const users: User[] = [{ _id: 'a1', name: 'Alice' }, { _id: 'b2', name: 'Bob' }]
     expect(getSender(userA, users)).toBe('Bob')
   })
 
-  test('returns own name when the other user is logged in user', () => {
-    const users = [{ id: 'b2', name: 'Bob' }, { id: 'a1', name: 'Alice' }]
+  test('returns "Bob" even when Bob is first in the array', () => {
+    const users: User[] = [{ _id: 'b2', name: 'Bob' }, { _id: 'a1', name: 'Alice' }]
     expect(getSender(userA, users)).toBe('Bob')
   })
 
@@ -27,11 +33,12 @@ describe('getSender', () => {
   })
 
   test('returns name when users is a single object (not array)', () => {
-    expect(getSender(userA, { name: 'Bob' })).toBe('Bob')
+    expect(getSender(userA, { _id: 'b2', name: 'Bob' })).toBe('Bob')
   })
 
   test('returns "Unknown sender" when users is null', () => {
-    expect(getSender(userA, null)).toBe('Unknown sender')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(getSender(userA, null as any)).toBe('Unknown sender')
   })
 })
 
@@ -39,21 +46,19 @@ describe('getSender', () => {
 
 describe('getSenderFull', () => {
   test('returns the other user object', () => {
-    const users = [{ id: 'a1', name: 'Alice' }, { id: 'b2', name: 'Bob' }]
-    expect(getSenderFull(userA, users)).toEqual({ id: 'b2', name: 'Bob' })
+    const users: User[] = [{ _id: 'a1', name: 'Alice' }, { _id: 'b2', name: 'Bob' }]
+    expect(getSenderFull(userA, users)).toEqual({ _id: 'b2', name: 'Bob' })
   })
 
   test('returns users[0] when users[0] is not the logged-in user', () => {
-    const users = [{ id: 'b2', name: 'Bob' }, { id: 'a1', name: 'Alice' }]
-    expect(getSenderFull(userA, users)).toEqual({ id: 'b2', name: 'Bob' })
+    const users: User[] = [{ _id: 'b2', name: 'Bob' }, { _id: 'a1', name: 'Alice' }]
+    expect(getSenderFull(userA, users)).toEqual({ _id: 'b2', name: 'Bob' })
   })
 })
 
 // isSameSender ------------------------------------------------------------
 
 describe('isSameSender', () => {
-  const msg = (senderId: string) => ({ sender: { _id: senderId } })
-
   test('returns true when next message is from a different sender and current is not the logged user', () => {
     const messages = [msg('b2'), msg('a1')]
     expect(isSameSender(messages, messages[0], 0, 'a1')).toBe(true)
@@ -73,8 +78,6 @@ describe('isSameSender', () => {
 // isLatestMessage ---------------------------------------------------------
 
 describe('isLatestMessage', () => {
-  const msg = (senderId: string) => ({ sender: { _id: senderId } })
-
   test('returns truthy for the last message when it is from someone else', () => {
     const messages = [msg('b2')]
     expect(isLatestMessage(messages, 0, 'a1')).toBeTruthy()
@@ -94,8 +97,6 @@ describe('isLatestMessage', () => {
 // isSameUser --------------------------------------------------------------
 
 describe('isSameUser', () => {
-  const msg = (senderId: string) => ({ sender: { _id: senderId } })
-
   test('returns true when previous message has the same sender', () => {
     const messages = [msg('b2'), msg('b2')]
     expect(isSameUser(messages, messages[1], 1)).toBe(true)
