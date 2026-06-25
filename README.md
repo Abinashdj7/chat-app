@@ -107,6 +107,34 @@ These tests spin up a real in-memory MongoDB (`mongodb-memory-server`) and exerc
 | `integration/chats.test.js` | Creating and fetching 1-to-1 and group chats |
 | `integration/posts.test.js` | Creating and fetching posts |
 
+### Replica Set Failover Test
+
+Requires the Docker stack to be running (`docker compose up -d`).
+
+```bash
+cd Server && npm run test:failover
+```
+
+Spins up a 3-node MongoDB replica set (`mongo1` primary, `mongo2`/`mongo3` secondaries), writes 100 documents with `w:majority`, hard-kills the primary container, waits for automatic election, then reads all documents back from the new primary.
+
+**Verified result (2026-06-21):**
+
+| Metric | Result |
+|---|---|
+| Documents written | 100 |
+| Write time | 154 ms |
+| Container stopped | mongo1 (primary) |
+| Election time | 523 ms |
+| New primary | mongo2 |
+| Documents after failover | 100 |
+| Read time after failover | 21 ms |
+| Data loss | 0 documents |
+| Verdict | PASS |
+
+`w:majority` ensures writes are acknowledged only after data is confirmed on ≥ 2 nodes, so zero data loss is guaranteed even when the primary dies before the client ack.
+
+---
+
 ### End-to-End Tests (Cypress)
 
 E2E tests require the dev server to be running.

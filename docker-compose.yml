@@ -10,12 +10,13 @@ services:
       timeout: 5s
       retries: 5
 
-  mongo:
+  mongo1:
     image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - '27017:27017'
     volumes:
-      - mongo_data:/data/db
+      - mongo1_data:/data/db
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
@@ -23,6 +24,64 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
+  mongo2:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo2_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  mongo3:
+    image: mongo:7
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - '27019:27017'
+    volumes:
+      - mongo3_data:/data/db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  mongo-init:
+    image: mongo:7
+    restart: "no"
+    depends_on:
+      mongo1:
+        condition: service_healthy
+      mongo2:
+        condition: service_healthy
+      mongo3:
+        condition: service_healthy
+    command: >
+      mongosh --host mongo1:27017 --eval "
+        try {
+          var s = rs.status();
+          print('Replica set already initialized, state: ' + s.myState);
+        } catch(e) {
+          rs.initiate({
+            _id: 'rs0',
+            members: [
+              { _id: 0, host: 'mongo1:27017' },
+              { _id: 1, host: 'mongo2:27017' },
+              { _id: 2, host: 'mongo3:27017' }
+            ]
+          });
+          print('Replica set rs0 initiated');
+        }
+      "
 
   server:
     build:
@@ -32,12 +91,12 @@ services:
       - '5050:5000'
     environment:
       NODE_ENV: production
-      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/chatapp}
-      CLIENT_URL: ${CLIENT_URL:-http://localhost:8080}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo1:27017,mongo2:27017,mongo3:27017/chatapp?replicaSet=rs0}
+      CLIENT_URL: ${CLIENT_URL:-http://localhost:3000}
       REDIS_URL: ${REDIS_URL:-redis://redis:6379}
     depends_on:
-      mongo:
-        condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -47,11 +106,13 @@ services:
       context: ./Client
       dockerfile: ../Dockerfile.client
     ports:
-      - '8080:80'
+      - '3000:80'
     environment:
       NODE_ENV: production
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:5050}
     restart: unless-stopped
 
 volumes:
-  mongo_data:
+  mongo1_data:
+  mongo2_data:
+  mongo3_data:
